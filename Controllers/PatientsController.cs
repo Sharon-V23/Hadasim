@@ -118,7 +118,7 @@ namespace WebApplication1.Controllers
                     returnCodeDesc = "The phone number must contain 10 digits"
                 });
             }
-            if (patientDto.vaccines[0]?.veccine_date>DateTime.Now)
+            if (patientDto.vaccines[0]?.veccine_date>DateTime.Now|| patientDto.vaccines[1]?.veccine_date > DateTime.Now || patientDto.vaccines[2]?.veccine_date > DateTime.Now || patientDto.vaccines[3]?.veccine_date > DateTime.Now)
             {
                 return BadRequest(new RequestResult
                 {

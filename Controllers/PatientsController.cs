@@ -35,7 +35,7 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public ActionResult<List<PatientWithIdDto>> GetPatients()
         {
-            
+
             var patients = _iPatientBll.getAllPatients();
 
             return Ok(patients);
@@ -62,21 +62,22 @@ namespace WebApplication1.Controllers
             return Ok(patient);
         }
         //[HttpPost]
-       
+
 
         //return CreatedAtAction(nameof(GetPatientById), new { id = createdPatient.Id }, createdPatient);
-    //}
+        //}
         [HttpPost("addPatient")]
         public ActionResult<RequestResult> AddPatient([FromBody] PatientDto patientDto)
         {
-           if (patientDto == null){
+            if (patientDto == null)
+            {
                 return BadRequest(new RequestResult
                 {
                     returnCode = -1,
                     returnCodeDesc = "The object cannot be null"
-                });                
+                });
             }
-            if (patientDto.Tz.Length!=9)
+            if (patientDto.Tz.Length != 9)
             {
                 return BadRequest(new RequestResult
                 {
@@ -85,7 +86,7 @@ namespace WebApplication1.Controllers
                 });
 
             }
-            if (patientDto.vaccines.Count>4)
+            if (patientDto.vaccines.Count > 4)
             {
                 return BadRequest(new RequestResult
                 {
@@ -93,7 +94,7 @@ namespace WebApplication1.Controllers
                     returnCodeDesc = "You cannot get more than 4 vaccinations"
                 });
             }
-            if (patientDto.birth_date>DateTime.Today)
+            if (patientDto.birth_date > DateTime.Today)
             {
                 return BadRequest(new RequestResult
                 {
@@ -102,7 +103,7 @@ namespace WebApplication1.Controllers
                 });
 
             }
-            if (patientDto.telephone.Length!= 9)
+            if (patientDto.telephone.Length != 9)
             {
                 return BadRequest(new RequestResult
                 {
@@ -110,7 +111,7 @@ namespace WebApplication1.Controllers
                     returnCodeDesc = "The phone number must contain 9 digits"
                 });
             }
-            if (patientDto.mobile_phone.Length!=10)
+            if (patientDto.mobile_phone.Length != 10)
             {
                 return BadRequest(new RequestResult
                 {
@@ -118,7 +119,23 @@ namespace WebApplication1.Controllers
                     returnCodeDesc = "The phone number must contain 10 digits"
                 });
             }
-            if (patientDto.vaccines[0]?.veccine_date>DateTime.Now|| patientDto.vaccines[1]?.veccine_date > DateTime.Now || patientDto.vaccines[2]?.veccine_date > DateTime.Now || patientDto.vaccines[3]?.veccine_date > DateTime.Now)
+            if (patientDto.coronaDetails.posutuve_result.AddDays(14) != patientDto.coronaDetails.posutuve_result)
+            {
+                return BadRequest(new RequestResult
+                {
+                    returnCode = -1,
+                    returnCodeDesc = "The recovery time is 14 days"
+                });
+            }
+            if (patientDto.vaccines[0]?.veccine_date > patientDto.birth_date || patientDto.vaccines[1]?.veccine_date > patientDto.birth_date || patientDto.vaccines[2]?.veccine_date > patientDto.birth_date || patientDto.vaccines[3]?.veccine_date > patientDto.birth_date)
+            {
+                return BadRequest(new RequestResult
+                {
+                    returnCode = -1,
+                    returnCodeDesc = "It is illegal to enter a vaccination date before the patient birth date"
+                });
+            }
+            if (patientDto.vaccines[0]?.veccine_date > DateTime.Now || patientDto.vaccines[1]?.veccine_date > DateTime.Now || patientDto.vaccines[2]?.veccine_date > DateTime.Now || patientDto.vaccines[3]?.veccine_date > DateTime.Now)
             {
                 return BadRequest(new RequestResult
                 {
@@ -126,29 +143,29 @@ namespace WebApplication1.Controllers
                     returnCodeDesc = "You can't introduce a vaccine that hasn't happened yet"
                 });
             }
-            //if (patientDto.vaccines[0].manufacturer==)
-            //{
-            //    return BadRequest(new RequestResult
-            //    {
-            //        returnCode = -1,
-            //        returnCodeDesc = "The phone number must contain 10 digits"
-            //    });
-            //}
+
+            foreach (var vaccine in patientDto.vaccines)
+            {
+                if (vaccine?.manufacturer != "Pfizer" || vaccine?.manufacturer == "Moderna" || vaccine?.manufacturer == "AstraZeneca" || vaccine?.manufacturer == "Novavax")
+
+                {
+                    return BadRequest(new RequestResult
+                    {
+                        returnCode = -1,
+                        returnCodeDesc = "There is no manufacturer by this name"
+                    });
+                }
+            }
             var createPatient = _iPatientBll.addPatient(patientDto);
 
             return Ok(new RequestResult
             {
-                returnCode =createPatient,
+                returnCode = createPatient,
                 returnCodeDesc = "success"
             });
         }
-        //    [HttpPost]
-        //public void addPatient([FromBody] string value)
-        //    {
-        //    }
-
-
-    } }
+    }
+}
 
 
 

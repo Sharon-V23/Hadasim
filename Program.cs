@@ -2,9 +2,10 @@ using Entity;
 using Dll;
 using AutoMapper;
 using Bll;
-
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+IConfiguration Configuration = builder.Configuration;
 
 // Add services to the container.
 
@@ -15,9 +16,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IPatientDll, PatientDll>();
 builder.Services.AddScoped<IPatientBll, PatientBll>();
+var ConnectionString = Configuration.GetConnectionString("HMOContext");
 
-
-builder.Services.AddDbContext<HMOContext>();
+builder.Services.AddDbContext<HMOContext>(op=> op.UseSqlServer(ConnectionString));
 var mapperConfig = new MapperConfiguration(mc =>
 {
 

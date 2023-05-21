@@ -48,6 +48,16 @@ namespace WebApplication1.Controllers
 
         //    return Ok(patients);
         //}
+        [HttpPost("getPatientWithoutVaccineCount")]
+        public ActionResult <int> getPatientWithoutVaccineCount()
+        {
+            var PatientWithoutVaccineCount = _iPatientBll.getPatientWithoutVaccineCount();
+            //var  = _iPatientBll.getAllCoronaPatient();
+            return Ok(PatientWithoutVaccineCount);
+
+        }
+
+
 
         [HttpGet("{id}")]
         public ActionResult<PatientDto> GetPatientById(int id)
@@ -86,7 +96,7 @@ namespace WebApplication1.Controllers
                 });
 
             }
-            if (patientDto.vaccines.Count > 4)
+            if (patientDto.vaccines?.Count > 4)
             {
                 return BadRequest(new RequestResult
                 {
@@ -102,6 +112,15 @@ namespace WebApplication1.Controllers
                     returnCodeDesc = "It is not possible to enter a date later than today"
                 });
 
+
+            }
+            if (patientDto.Corona_Detail?.posutuve_result > DateTime.Today)
+            {
+                return BadRequest(new RequestResult
+                {
+                    returnCode = -1,
+                    returnCodeDesc = "It is not possible to enter a date later than today"
+                });
             }
             if (patientDto.telephone.Length != 9)
             {
@@ -119,23 +138,28 @@ namespace WebApplication1.Controllers
                     returnCodeDesc = "The phone number must contain 10 digits"
                 });
             }
-            if (patientDto.coronaDetails.posutuve_result.AddDays(14) != patientDto.coronaDetails.posutuve_result)
+            if (patientDto.Corona_Detail?.posutuve_result.AddDays(14) != patientDto.Corona_Detail?.recovery_date)
             {
                 return BadRequest(new RequestResult
                 {
                     returnCode = -1,
+
                     returnCodeDesc = "The recovery time is 14 days"
                 });
             }
-            if (patientDto.vaccines[0]?.veccine_date > patientDto.birth_date || patientDto.vaccines[1]?.veccine_date > patientDto.birth_date || patientDto.vaccines[2]?.veccine_date > patientDto.birth_date || patientDto.vaccines[3]?.veccine_date > patientDto.birth_date)
+            if (patientDto.vaccines!=null&&( patientDto.vaccines[0]?.veccine_date < patientDto.birth_date || patientDto.vaccines[1]?.veccine_date < patientDto.birth_date || patientDto.vaccines[2]?.veccine_date < patientDto.birth_date || patientDto.vaccines[3]?.veccine_date < patientDto.birth_date))
             {
                 return BadRequest(new RequestResult
                 {
+
+
                     returnCode = -1,
                     returnCodeDesc = "It is illegal to enter a vaccination date before the patient birth date"
                 });
             }
-            if (patientDto.vaccines[0]?.veccine_date > DateTime.Now || patientDto.vaccines[1]?.veccine_date > DateTime.Now || patientDto.vaccines[2]?.veccine_date > DateTime.Now || patientDto.vaccines[3]?.veccine_date > DateTime.Now)
+            
+            
+            if (patientDto.vaccines != null && (patientDto.vaccines[0]?.veccine_date > DateTime.Now || patientDto.vaccines[1]?.veccine_date > DateTime.Now || patientDto.vaccines[2]?.veccine_date > DateTime.Now || patientDto.vaccines[3]?.veccine_date > DateTime.Now))
             {
                 return BadRequest(new RequestResult
                 {
@@ -144,7 +168,8 @@ namespace WebApplication1.Controllers
                 });
             }
 
-            foreach (var vaccine in patientDto.vaccines)
+            if (patientDto.vaccines != null) {  
+                foreach(var vaccine in patientDto.vaccines)
             {
                 if (vaccine?.manufacturer != "Pfizer" || vaccine?.manufacturer == "Moderna" || vaccine?.manufacturer == "AstraZeneca" || vaccine?.manufacturer == "Novavax")
 
@@ -155,9 +180,27 @@ namespace WebApplication1.Controllers
                         returnCodeDesc = "There is no manufacturer by this name"
                     });
                 }
-            }
-            var createPatient = _iPatientBll.addPatient(patientDto);
+            }}
 
+            if (int.TryParse(patientDto.Tz,out int number)==false)
+            {
+                return BadRequest(new RequestResult
+                {
+                    returnCode = -1,
+                    returnCodeDesc = "You need to enter numbers only"
+                });
+            }
+
+
+            var createPatient = _iPatientBll.addPatient(patientDto);
+            if (createPatient==-1)
+
+                return BadRequest(new RequestResult
+                {
+                    returnCode = -1,
+                    returnCodeDesc = "This user already exists in the system"
+                });
+      
             return Ok(new RequestResult
             {
                 returnCode = createPatient,
